@@ -61,6 +61,19 @@ USDT-TRC20打赏地址: TS6gwDBNWDy51unAQHAysJ53u2mtLMAKhZ
 ```
 <img src="wiki/imgs/usdt_thanks.jpg?a=f" width = "400" height = "400" alt="usdt扫码打赏"/>
 
+## 致谢
+感谢以下开源项目：
+
+[Serilog](https://github.com/serilog/serilog) ![Github stars](https://img.shields.io/github/stars/serilog/serilog?style=social)
+
+[FreeSql](https://github.com/dotnetcore/FreeSql) ![Github stars](https://img.shields.io/github/stars/dotnetcore/FreeSql?style=social)
+
+[Flurl](https://github.com/tmenier/Flurl) ![Github stars](https://img.shields.io/github/stars/tmenier/Flurl?style=social)
+
+[Telegram.Bot](https://github.com/TelegramBots/Telegram.Bot) ![Github stars](https://img.shields.io/github/stars/TelegramBots/Telegram.Bot?style=social)
+
+[TronNet](https://github.com/stoway/TronNet) ![Github stars](https://img.shields.io/github/stars/stoway/TronNet?style=social)
+
 ## 声明
 `CoinConvertBot`为开源的产品，仅用于学习交流使用！       
 不可用于任何违反中华人民共和国(含台湾省)或使用者所在地区法律法规的用途。           
