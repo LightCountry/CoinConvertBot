@@ -1,4 +1,4 @@
-<p align="center"><img src="https://cdn5.telegram-cdn.org/file/OIuGXln6BZjgxSnQyJhknqzUaIvzlEyu_2D1BrkMl7ANt-tsx01GO16aJnHNpMVGjcD0IK7F4JJhTgCvSNTWCaDgf6vlsPzoiL0haPYKe-sDOmZQaWkIhjyGu2ARUxJTq81fIrG7-eR8RDOskP3lWrrcBTn7zGLxASKygg3Lxikk_zl5RT6oUItnRIQ1lfOeu0UN8Ci2LgLZZj2zEuo8WCJJQ4NoWe8gpQ6PmvcszLlufLbiVMajFuga5tprZU7BqTEUyyVho2CPmR442bho1bNg1ht9bJgxlg67stlSu6_tF2UH4MKAkr4aYFAxEIG38NZCr8Ih29dJKJfcYaEAtQ.jpg" width="150"></p>
+<p align="center"><img src="wiki/imgs/logo.png" width="150"></p>
 
 <p align="center">
 <a href="https://www.gnu.org/licenses/gpl-3.0.html"><img src="https://img.shields.io/badge/license-GPLV3-blue" alt="license GPLV3"></a>
@@ -59,7 +59,7 @@ CoinConvertBot
 ```
 USDT-TRC20打赏地址: TS6gwDBNWDy51unAQHAysJ53u2mtLMAKhZ
 ```
-<img src="wiki/imgs/usdt_thanks.jpg?a=f" width = "400" height = "400" alt="usdt扫码打赏"/>
+<img src="wiki/imgs/usdt_thanks.jpg" width = "400" height = "400" alt="usdt扫码打赏"/>
 
 ## 致谢
 感谢以下开源项目：
