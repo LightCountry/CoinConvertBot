@@ -78,6 +78,7 @@ namespace Telegram.CoinConvertBot.BgServices
                 }
                 catch (Exception e)
                 {
+                    _logger.LogError(e, "转账TRX出错！");
                     order.Status = Status.Error;
                     order.Error = e.Message;
                 }
