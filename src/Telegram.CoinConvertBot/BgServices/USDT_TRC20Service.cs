@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.CoinConvertBot.BgServices.Base;
+using Telegram.CoinConvertBot.BgServices.BotHandler;
 using Telegram.CoinConvertBot.Domains.Tables;
 using Telegram.CoinConvertBot.Extensions;
 using Telegram.CoinConvertBot.Helper;
@@ -122,7 +123,7 @@ namespace Telegram.CoinConvertBot.BgServices
 哈希：<code>{record.BlockTransactionId}</code>
 时间：<b>{record.ReceiveTime:yyyy-MM-dd HH:mm:ss}</b>
 地址：<code>{record.FromAddress}</code>
-预估：<b>{record.OriginalAmount.USDT_To_TRX(rate)} TRX</b>
+预估：<b>{record.OriginalAmount.USDT_To_TRX(rate, UpdateHandlers.FeeRate)} TRX</b>
 
 您的兑换申请已进入队列，预计5分钟内转入您的账户！
 ", Bot.Types.Enums.ParseMode.Html, replyMarkup: inlineKeyboard);
@@ -141,7 +142,7 @@ namespace Telegram.CoinConvertBot.BgServices
 转入：<b>{record.OriginalAmount:#.######} {record.OriginalCurrency}</b>
 来源：<code>{record.FromAddress}</code>
 接收：<code>{record.ToAddress}</code>
-预估：<b>{record.OriginalAmount.USDT_To_TRX(rate)} TRX</b>
+预估：<b>{record.OriginalAmount.USDT_To_TRX(rate, UpdateHandlers.FeeRate)} TRX</b>
 时间：<b>{record.ReceiveTime:yyyy-MM-dd HH:mm:ss}</b>
 ", Bot.Types.Enums.ParseMode.Html, replyMarkup: inlineKeyboard);
                                 }
