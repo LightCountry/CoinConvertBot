@@ -9,7 +9,7 @@ on:
 
 env:
   # 设置 docker 镜像名
-  IMAGE_NAME: coinconvertbot
+  IMAGE_NAME: coin-convert-bot
 
 jobs:
   # 运行测试，如果需要的话，将注释取消掉并且修改为自己需要的内容
@@ -48,7 +48,7 @@ jobs:
       - name: Push image
         run: |
           # 拼接镜像 id，这个镜像 id 就是在使用 docker 镜像时 pull 后面的名字。
-          IMAGE_ID=cosrbackup/$IMAGE_NAME
+          IMAGE_ID=lightcountry/$IMAGE_NAME
           # 将所有的大写字母转为小写
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           # 从 GitHub.ref 中取出版本
