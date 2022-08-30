@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  app:
+    container_name: coin-convert-bot
+    restart: always
+    build:
+      context: .
+    image: coin-convert-bot:lastest

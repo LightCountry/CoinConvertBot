@@ -26,6 +26,7 @@ public static class UpdateHandlers
     public static long AdminUserId => configuration.GetValue<long>("BotConfig:AdminUserId");
     public static string AdminUserUrl => configuration.GetValue<string>("BotConfig:AdminUserUrl");
     public static decimal MinUSDT => configuration.GetValue("MinToken:USDT", 5m);
+    public static decimal FeeRate => configuration.GetValue("FeeRate", 0.1m);
     /// <summary>
     /// 错误处理
     /// </summary>
@@ -235,8 +236,8 @@ USDT： <b>{USDT}</b>
 示例：
 <code>转入金额：<b>10 USDT</b>
 手续费：<b>1 USDT</b>
-实时汇率：<b>1 USDT = {2m.USDT_To_TRX(rate):#.####} TRX</b>
-获得TRX：<b>(10 - 1) * {2m.USDT_To_TRX(rate):#.####} = {9m.USDT_To_TRX(rate):0.00} TRX</b></code>
+实时汇率：<b>1 USDT = {2m.USDT_To_TRX(rate, FeeRate):#.####} TRX</b>
+获得TRX：<b>(10 - 1) * {2m.USDT_To_TRX(rate, FeeRate):#.####} = {9m.USDT_To_TRX(rate, FeeRate):0.00} TRX</b></code>
 
 注意：<b>暂时只支持{MinUSDT} USDT以上(不含{MinUSDT} USDT)的金额兑换，若转入{MinUSDT} USDT及以下金额，将无法退还！！！</b>
 
@@ -260,15 +261,15 @@ USDT： <b>{USDT}</b>
             var ReciveAddress = addressArray.Length == 0 ? "未配置" : addressArray[UserId % addressArray.Length];
             var msg = @$"<b>实时价目表</b>
 
-实时汇率：<b>1 USDT = {1m.USDT_To_TRX(rate):#.####} TRX</b>
+实时汇率：<b>1 USDT = {2m.USDT_To_TRX(rate, FeeRate):#.####} TRX</b>
 ————————————————————<code>
-   5 USDT = {(5m * 1).USDT_To_TRX(rate):0.00} TRX
-  10 USDT = {(5m * 2).USDT_To_TRX(rate):0.00} TRX
-  20 USDT = {(5m * 4).USDT_To_TRX(rate):0.00} TRX
-  50 USDT = {(5m * 10).USDT_To_TRX(rate):0.00} TRX
- 100 USDT = {(5m * 20).USDT_To_TRX(rate):0.00} TRX
- 500 USDT = {(5m * 100).USDT_To_TRX(rate):0.00} TRX
-1000 USDT = {(5m * 200).USDT_To_TRX(rate):0.00} TRX
+   5 USDT = {(5m * 1).USDT_To_TRX(rate, FeeRate):0.00} TRX
+  10 USDT = {(5m * 2).USDT_To_TRX(rate, FeeRate):0.00} TRX
+  20 USDT = {(5m * 4).USDT_To_TRX(rate, FeeRate):0.00} TRX
+  50 USDT = {(5m * 10).USDT_To_TRX(rate, FeeRate):0.00} TRX
+ 100 USDT = {(5m * 20).USDT_To_TRX(rate, FeeRate):0.00} TRX
+ 500 USDT = {(5m * 100).USDT_To_TRX(rate, FeeRate):0.00} TRX
+1000 USDT = {(5m * 200).USDT_To_TRX(rate, FeeRate):0.00} TRX
 </code>
 
 机器人收款地址： <code>{_myTronConfig.Value.Address}</code>
@@ -353,13 +354,13 @@ USDT： <b>{USDT}</b>
                 }
                 else
                 {
-                    var toPrice = price.USDT_To_TRX(rate);
+                    var toPrice = price.USDT_To_TRX(rate, FeeRate);
                     msg = $"<b>{price} {fromCurrency} = {toPrice} {toCurrency}</b>";
                 }
             }
             if (fromCurrency == Currency.TRX && toCurrency == Currency.USDT)
             {
-                var toPrice = price.TRX_To_USDT(rate);
+                var toPrice = price.TRX_To_USDT(rate, FeeRate);
                 if (toPrice <= MinUSDT)
                 {
                     msg = $"仅支持大于{MinUSDT} USDT 的兑换";

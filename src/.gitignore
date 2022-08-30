@@ -363,3 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 appsettings.json
+publish.sh
+archive.sh

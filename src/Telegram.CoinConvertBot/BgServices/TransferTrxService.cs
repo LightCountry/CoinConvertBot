@@ -60,7 +60,7 @@ namespace Telegram.CoinConvertBot.BgServices
             foreach (var order in Orders)
             {
                 _logger.LogInformation("开始处理待转账订单: {c}", order.BlockTransactionId);
-                order.ConvertAmount = order.OriginalAmount.USDT_To_TRX(rate);
+                order.ConvertAmount = order.OriginalAmount.USDT_To_TRX(rate, UpdateHandlers.FeeRate);
                 try
                 {
                     var result = await TransferTrxAsync(scope.ServiceProvider, order.FromAddress, order.ConvertAmount, TransferMemo);
