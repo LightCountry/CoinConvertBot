@@ -272,7 +272,7 @@ USDT： <b>{USDT}</b>
 1000 USDT = {(5m * 200).USDT_To_TRX(rate, FeeRate):0.00} TRX
 </code>
 
-机器人收款地址： <code>{_myTronConfig.Value.Address}</code>
+机器人收款地址： <code>{ReciveAddress}</code>
 
 注意：<b>暂时只支持{MinUSDT} USDT以上(不含{MinUSDT} USDT)的金额兑换，若转入{MinUSDT} USDT及以下金额，将无法退还！！！</b>
 
