@@ -8,7 +8,9 @@
 
 ## 2. 修改配置文件
 修改配置文件`appsettings.json`
+若没有此文件，可新建
 并按照配置文件内的说明修改配置
+> `appsettings.json`说明参见：[appsettings.json](appsettings.md)
 
 ## 3. 启动
 双击`exe`文件启动即可

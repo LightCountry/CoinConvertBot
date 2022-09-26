@@ -4,7 +4,8 @@
 <a href="https://www.gnu.org/licenses/gpl-3.0.html"><img src="https://img.shields.io/badge/license-GPLV3-blue" alt="license GPLV3"></a>
 <a href="https://www.php.net/releases/7_4_0.php"><img src="https://img.shields.io/badge/.NET-6-orange" alt=".net6"></a>
 <a href="https://github.com/assimon/dujiaoka/releases/tag/1.0.0"><img src="https://img.shields.io/badge/version-1.0.0-red" alt="version 1.0.0"></a>
-<a href="https://t.me/CoinConvertChannel"><img src="https://img.shields.io/badge/TelegramBot-@CoinConvertBot-blue" alt="官方机器人：@CoinConvertBot"></a>
+<a href="https://t.me/CoinConvertChannel"><img src="https://img.shields.io/badge/官方频道-@CoinConvertChannel-blue" alt="官方频道：@CoinConvertChannel"></a>
+<a href="https://t.me/CoinConvertBot"><img src="https://img.shields.io/badge/官方Bot-@CoinConvertBot-blue" alt="官方机器人：@CoinConvertBot"></a>
 </p>
 
 ## 兑币机 - Telegram Bot
@@ -57,9 +58,9 @@ CoinConvertBot
 ## 打赏
 如果该项目对您有所帮助，希望可以请我喝一杯咖啡☕️
 ```
-USDT-TRC20打赏地址: TS6gwDBNWDy51unAQHAysJ53u2mtLMAKhZ
+USDT-TRC20打赏地址: TQWM6cuy6YesssqqzSucoUkS1A11kAAAAA
 ```
-<img src="wiki/imgs/usdt_thanks.jpg" width = "400" height = "400" alt="usdt扫码打赏"/>
+<img src="wiki/imgs/usdt_thanks.jpg" width = "400" alt="usdt扫码打赏"/>
 
 ## 致谢
 感谢以下开源项目：
