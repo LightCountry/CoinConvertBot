@@ -8,11 +8,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.CoinConvertBot.BgServices.Base;
-using Telegram.CoinConvertBot.BgServices.BotHandler;
 using Telegram.CoinConvertBot.Domains.Tables;
 using Telegram.CoinConvertBot.Extensions;
 using Telegram.CoinConvertBot.Helper;
 using Telegram.CoinConvertBot.Models;
+using Telegram.CoinConvertBot.Models.TronModel;
 
 namespace Telegram.CoinConvertBot.BgServices
 {
@@ -21,16 +21,19 @@ namespace Telegram.CoinConvertBot.BgServices
         private readonly ILogger<USDT_TRC20Service> _logger;
         private readonly IConfiguration _configuration;
         private readonly ITelegramBotClient _botClient;
+        private readonly IHostEnvironment _env;
         private readonly IServiceProvider _serviceProvider;
 
         public USDT_TRC20Service(ILogger<USDT_TRC20Service> logger,
             IConfiguration configuration,
             ITelegramBotClient botClient,
-            IServiceProvider serviceProvider) : base("USDT-TRC20记录检测", TimeSpan.FromSeconds(30), logger)
+            IHostEnvironment env,
+            IServiceProvider serviceProvider) : base("USDT-TRC20记录检测", TimeSpan.FromSeconds(10), logger)
         {
             _logger = logger;
             _configuration = configuration;
             _botClient = botClient;
+            _env = env;
             _serviceProvider = serviceProvider;
         }
 
@@ -44,50 +47,61 @@ namespace Telegram.CoinConvertBot.BgServices
             var _bindRepository = provider.GetRequiredService<IBaseRepository<TokenBind>>();
 
             var payMinTime = DateTime.Now.AddSeconds(-60 * 5);
-            var payMaxTime = DateTime.Now;
             var addressArray = _configuration.GetSection("Address:USDT-TRC20").Get<string[]>();
             if (addressArray.Length == 0)
             {
                 _logger.LogWarning("未配置USDT收款地址！");
                 return;
             }
+            var ContractAddress = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+            var BaseUrl = "https://api.trongrid.io";
+            if (!_env.IsProduction())
+            {
+                ContractAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
+                BaseUrl = "https://api.shasta.trongrid.io";
+            }
             foreach (var address in addressArray)
             {
 
-                var data = new
+                var query = new Dictionary<string, object>();
+                query.Add("only_confirmed", true);
+                query.Add("only_to", true);
+                query.Add("limit", 50);
+                query.Add("min_timestamp", (long)payMinTime.ToUnixTimeStamp());
+                query.Add("contract_address", ContractAddress);
+                var req = BaseUrl
+                    .AppendPathSegment($"v1/accounts/{address}/transactions/trc20")
+                    .SetQueryParams(query)
+                    .WithTimeout(15);
+                if (_env.IsProduction())
+                    req = req.WithHeader("TRON-PRO-API-KEY", _configuration.GetValue("TRON-PRO-API-KEY", ""));
+                var result = await req
+                    .GetJsonAsync<BaseResponse<Transactions>>();
+
+                if (result.Success && result.Data?.Count > 0)
                 {
-                    start = 0,
-                    limit = 200,
-                    direction = "in",
-                    tokens = _myTronConfig.Value.USDTContractAddress,
-                    relatedAddress = address,
-                    toAddress = address,
-                    start_timestamp = (long)payMinTime.ToUnixTimeStamp(),
-                    end_timestamp = (long)payMaxTime.ToUnixTimeStamp()
-                };
-                var transfers = await _myTronConfig.Value.ApiHost
-                    .AppendPathSegment("api/token_trc20/transfers")
-                    .SetQueryParams(data)
-                    .GetJsonAsync();
-                if (transfers.total > 0)
-                {
-                    var list = (IList<dynamic>)transfers.token_transfers;
-                    foreach (var item in list)
+                    foreach (var item in result.Data)
                     {
-                        //收款地址相同，已确认的订单
-                        if (item.to_address != address || item.finalResult != "SUCCESS") continue;
+                        //合约地址不匹配
+                        if (item.TokenInfo?.Address != ContractAddress)
+                        {
+                            continue;
+                        }
+                        //收款地址相同
+                        if (item.To != address) continue;
                         //实际支付金额
-                        var amount = Convert.ToDecimal(item.quant) / 1_000_000;
+                        var amount = item.Amount;
                         var record = new TokenRecord
                         {
-                            BlockTransactionId = item.transaction_id,
-                            FromAddress = item.from_address,
-                            ToAddress = item.to_address,
+                            BlockTransactionId = item.TransactionId,
+                            FromAddress = item.From,
+                            ToAddress = item.To,
+                            //ContractAddress = item.TokenInfo.Address,
                             OriginalAmount = amount,
                             OriginalCurrency = Currency.USDT,
                             ConvertCurrency = Currency.TRX,
                             Status = Status.Pending,
-                            ReceiveTime = ((long)item.block_ts).ToDateTime()
+                            ReceiveTime = item.BlockTimestamp.ToDateTime()
                         };
                         if (!await _repository.Where(x => x.BlockTransactionId == record.BlockTransactionId).AnyAsync())
                         {
@@ -96,7 +110,7 @@ namespace Telegram.CoinConvertBot.BgServices
                             var AdminUserId = _configuration.GetValue<long>("BotConfig:AdminUserId");
                             try
                             {
-                                var viewUrl = $"https://nile.tronscan.org/#/transaction/{record.BlockTransactionId}";
+                                var viewUrl = $"https://shasta.tronscan.org/#/transaction/{record.BlockTransactionId}";
                                 if (hostEnvironment.IsProduction())
                                 {
                                     viewUrl = $"https://tronscan.org/#/transaction/{record.BlockTransactionId}";
@@ -109,8 +123,7 @@ namespace Telegram.CoinConvertBot.BgServices
                                                 Bot.Types.ReplyMarkups.InlineKeyboardButton.WithUrl("查看区块",viewUrl),
                                             },
                                     });
-                                var _rateRepository = provider.GetRequiredService<IBaseRepository<TokenRate>>();
-                                var rate = await _rateRepository.Where(x => x.Currency == Currency.USDT && x.ConvertCurrency == Currency.TRX).FirstAsync(x => x.Rate);
+
                                 var binds = await _bindRepository.Where(x => x.Currency == Currency.TRX && x.Address == record.FromAddress).ToListAsync();
                                 if (binds.Count > 0)
                                 {
@@ -118,12 +131,11 @@ namespace Telegram.CoinConvertBot.BgServices
                                     {
                                         try
                                         {
-                                            await _botClient.SendTextMessageAsync(bind.UserId, $@"<b>我们已经收到您的USDT</b>
+                                            await _botClient.SendTextMessageAsync(bind.UserId, $@"<b>我们已经收到您转出的USDT</b>
 金额：<b>{record.OriginalAmount:#.######} {record.OriginalCurrency}</b>
 哈希：<code>{record.BlockTransactionId}</code>
 时间：<b>{record.ReceiveTime:yyyy-MM-dd HH:mm:ss}</b>
 地址：<code>{record.FromAddress}</code>
-预估：<b>{record.OriginalAmount.USDT_To_TRX(rate, UpdateHandlers.FeeRate)} TRX</b>
 
 您的兑换申请已进入队列，预计5分钟内转入您的账户！
 ", Bot.Types.Enums.ParseMode.Html, replyMarkup: inlineKeyboard);
@@ -136,13 +148,17 @@ namespace Telegram.CoinConvertBot.BgServices
                                 }
                                 if (AdminUserId > 0)
                                 {
+                                    var _rateRepository = provider.GetRequiredService<IBaseRepository<TokenRate>>();
+                                    var rate = await _rateRepository.Where(x => x.Currency == Currency.USDT && x.ConvertCurrency == Currency.TRX).FirstAsync(x => x.Rate);
                                     await _botClient.SendTextMessageAsync(AdminUserId, $@"<b>USDT入账通知！({record.OriginalAmount:#.######} {record.OriginalCurrency})</b>
 
 订单：<code>{record.BlockTransactionId}</code>
+原币：<b>{record.OriginalCurrency}</b>
 转入：<b>{record.OriginalAmount:#.######} {record.OriginalCurrency}</b>
 来源：<code>{record.FromAddress}</code>
 接收：<code>{record.ToAddress}</code>
-预估：<b>{record.OriginalAmount.USDT_To_TRX(rate, UpdateHandlers.FeeRate)} TRX</b>
+转换：<b>{record.ConvertCurrency}</b>
+预估：<b>{record.OriginalAmount.USDT_To_TRX(rate)} TRX</b>
 时间：<b>{record.ReceiveTime:yyyy-MM-dd HH:mm:ss}</b>
 ", Bot.Types.Enums.ParseMode.Html, replyMarkup: inlineKeyboard);
                                 }

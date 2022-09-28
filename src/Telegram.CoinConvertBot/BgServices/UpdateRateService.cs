@@ -38,49 +38,65 @@ namespace Telegram.CoinConvertBot.BgServices
 
         protected override async Task ExecuteAsync()
         {
+            var list = new List<TokenRate>();
             _logger.LogInformation("------------------{tips}------------------", "开始更新汇率");
             using IServiceScope scope = _serviceProvider.CreateScope();
             var _repository = scope.ServiceProvider.GetRequiredService<IBaseRepository<TokenRate>>();
 
-            var list = new List<TokenRate>();
-            var side = "buy";
-            try
+            var rate = _configuration.GetValue("TrxRate", 0m);
+            if (rate > 0)
             {
-
-                var convert1 = await baseUrl
-                    .WithClient(client)
-                    .WithHeaders(new { User_Agent })
-                    .AppendPathSegment("v2/asset/quick/exchange/quote")
-                    //.SetQueryParams()
-                    .PostJsonAsync(new
-                    {
-                        side,
-                        baseCcy = Currency.TRX.ToString(),
-                        quoteCcy = Currency.USDT.ToString(),
-                        rfqSz = 1,
-                        rfqSzCcy = Currency.USDT.ToString(),
-                    })
-                    .ReceiveJson<Root>();
-                if (convert1.code == 0)
+                list.Add(new TokenRate
                 {
-                    list.Add(new TokenRate
-                    {
-                        Id = $"USDT_{Currency.TRX}",
-                        Currency = Currency.USDT,
-                        ConvertCurrency = Currency.TRX,
-                        LastUpdateTime = DateTime.Now,
-                        Rate = convert1.data.askBaseSz,
-                        ReverseRate = convert1.data.askPx,
-                    });
-                }
-                else
-                {
-                    //_logger.LogWarning("TRX -> USDT 汇率获取失败！错误信息：{msg}", convert1.msg ?? convert1.error_message);
-                }
+                    Id = $"USDT_{Currency.TRX}",
+                    Currency = Currency.USDT,
+                    ConvertCurrency = Currency.TRX,
+                    LastUpdateTime = DateTime.Now,
+                    Rate = rate,
+                    ReverseRate = 1m / rate,
+                });
             }
-            catch (Exception e)
+            else
             {
-                _logger.LogWarning("TRX -> USDT 汇率获取失败！错误信息：{msg}", e?.InnerException?.Message + "; " + e?.Message);
+                var side = "buy";
+                try
+                {
+
+                    var convert1 = await baseUrl
+                        .WithClient(client)
+                        .WithHeaders(new { User_Agent })
+                        .AppendPathSegment("v2/asset/quick/exchange/quote")
+                        //.SetQueryParams()
+                        .PostJsonAsync(new
+                        {
+                            side,
+                            baseCcy = Currency.TRX.ToString(),
+                            quoteCcy = Currency.USDT.ToString(),
+                            rfqSz = 1,
+                            rfqSzCcy = Currency.USDT.ToString(),
+                        })
+                        .ReceiveJson<Root>();
+                    if (convert1.code == 0)
+                    {
+                        list.Add(new TokenRate
+                        {
+                            Id = $"USDT_{Currency.TRX}",
+                            Currency = Currency.USDT,
+                            ConvertCurrency = Currency.TRX,
+                            LastUpdateTime = DateTime.Now,
+                            Rate = convert1.data.askBaseSz,
+                            ReverseRate = convert1.data.askPx,
+                        });
+                    }
+                    else
+                    {
+                        //_logger.LogWarning("TRX -> USDT 汇率获取失败！错误信息：{msg}", convert1.msg ?? convert1.error_message);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning("TRX -> USDT 汇率获取失败！错误信息：{msg}", e?.InnerException?.Message + "; " + e?.Message);
+                }
             }
 
             foreach (var item in list)
