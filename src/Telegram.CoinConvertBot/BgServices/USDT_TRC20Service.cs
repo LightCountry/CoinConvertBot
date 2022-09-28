@@ -74,7 +74,7 @@ namespace Telegram.CoinConvertBot.BgServices
                     .SetQueryParams(query)
                     .WithTimeout(15);
                 if (_env.IsProduction())
-                    req = req.WithHeader("TRON-PRO-API-KEY", _configuration.GetValue("TRON-PRO-API-KEY", ""));
+                    req = req.WithHeader("TRON-PRO-API-KEY", _configuration.GetValue("TronNet:ApiKey", ""));
                 var result = await req
                     .GetJsonAsync<BaseResponse<Transactions>>();
 
