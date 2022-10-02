@@ -22,7 +22,7 @@
 ### 1. 首先安装docker
 `海外机`直接使用以下命令安装
 ```
-curl -fsSL https://get.docker.com
+curl -fsSL https://get.docker.com | bash
 ```
 `国内机`使用`阿里云镜像仓库`安装docker
 ```
