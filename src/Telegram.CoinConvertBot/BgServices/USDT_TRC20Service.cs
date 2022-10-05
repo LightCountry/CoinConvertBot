@@ -83,12 +83,10 @@ namespace Telegram.CoinConvertBot.BgServices
                     foreach (var item in result.Data)
                     {
                         //合约地址不匹配
-                        if (item.TokenInfo?.Address != ContractAddress)
-                        {
-                            continue;
-                        }
+                        if (item.TokenInfo?.Address != ContractAddress) continue;
+                        var types = new string[] { "Transfer", "TransferFrom" };
                         //收款地址相同
-                        if (item.To != address) continue;
+                        if (item.To != address || !types.Contains(item.Type)) continue;
                         //实际支付金额
                         var amount = item.Amount;
                         var record = new TokenRecord

@@ -53,7 +53,7 @@ namespace Telegram.CoinConvertBot.BgServices
             }
             var Orders = await _repository
                 .Where(x => x.Status == Status.Pending)
-                .Where(x => x.OriginalAmount > UpdateHandlers.MinUSDT)
+                .Where(x => x.OriginalAmount >= UpdateHandlers.MinUSDT)
                 .ToListAsync();
             if (Orders.Count > 0)
                 _logger.LogInformation("待转账订单检测，订单数：{c}", Orders.Count);

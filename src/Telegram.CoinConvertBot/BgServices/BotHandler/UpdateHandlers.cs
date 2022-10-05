@@ -239,7 +239,7 @@ USDT： <b>{USDT}</b>
 实时汇率：<b>1 USDT = {2m.USDT_To_TRX(rate, FeeRate):#.####} TRX</b>
 获得TRX：<b>(10 - 1) * {2m.USDT_To_TRX(rate, FeeRate):#.####} = {9m.USDT_To_TRX(rate, FeeRate):0.00} TRX</b></code>
 
-注意：<b>暂时只支持{MinUSDT} USDT以上(不含{MinUSDT} USDT)的金额兑换，若转入{MinUSDT} USDT及以下金额，将无法退还！！！</b>
+注意：<b>只支持{MinUSDT} USDT以上的金额兑换。</b>
 
 转帐前，推荐您使用以下命令来接收入账通知
 <code>绑定波场地址 Txxxxxxx</code>(您的钱包地址)
@@ -348,7 +348,7 @@ USDT： <b>{USDT}</b>
             var msg = $"<b>{price} {fromCurrency} = {price} {fromCurrency}</b>";
             if (fromCurrency == Currency.USDT && toCurrency == Currency.TRX)
             {
-                if (price <= MinUSDT)
+                if (price < MinUSDT)
                 {
                     msg = $"仅支持大于{MinUSDT} USDT 的兑换";
                 }
@@ -361,7 +361,7 @@ USDT： <b>{USDT}</b>
             if (fromCurrency == Currency.TRX && toCurrency == Currency.USDT)
             {
                 var toPrice = price.TRX_To_USDT(rate, FeeRate);
-                if (toPrice <= MinUSDT)
+                if (toPrice < MinUSDT)
                 {
                     msg = $"仅支持大于{MinUSDT} USDT 的兑换";
                 }
