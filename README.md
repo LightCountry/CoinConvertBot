@@ -12,6 +12,12 @@
 
 >一款开源自动化USDT兑换TRX的Telegram机器人！
 
+## AD -- 免费领取国际信用卡
+免费领取VISA卡，万事达卡，充值USDT即可随便刷  
+可绑微信、支付宝、美区AppStore消费  
+快来领取你的可刷USDT的国际银行卡吧   
+➡️➡️➡️ [点击领取你的depay卡](https://depay.depay.one/web-app/register-h5?invitCode=949656&lang=zh-cn)
+
 ## 项目简介
 - `CoinConvertBot`是一个由`C#语言`编写的私有化部署`USDT-TRC20`全自动兑换`TRX`的机器人。     
 - 本项目不依赖任何外部资源，无需另外部署`数据库`，采用轻量化的`sqlite`，也无需`redis`。
