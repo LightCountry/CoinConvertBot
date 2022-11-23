@@ -123,7 +123,7 @@ namespace Telegram.CoinConvertBot.BgServices
                                     {
                                         try
                                         {
-                                            await _botClient.SendTextMessageAsync(bind.UserId, $@"<b>我们已经收到您转出的{record.ConvertCurrency}</b>
+                                            await _botClient.SendTextMessageAsync(bind.UserId, $@"<b>我们已经收到您转出的{record.OriginalCurrency}</b>
 金额：<b>{record.OriginalAmount:#.######} {record.OriginalCurrency}</b>
 哈希：<code>{record.BlockTransactionId}</code>
 时间：<b>{record.ReceiveTime:yyyy-MM-dd HH:mm:ss}</b>

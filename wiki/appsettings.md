@@ -22,7 +22,7 @@
     "Address": "Taaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", //钱包地址，建议另外新建钱包地址
     "PrivateKey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", //私钥，建议另外新建钱包地址
     "USDTContractAddress": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", //此为USDT合约地址，请勿修改！！！
-    "ApiHost": "https://apilist.tronscan.org"
+    "ApiHost": "https://api.trongrid.io"
   },
   "ConnectionStrings": {
     "DB": "Data Source=TG-CoinConvert.db;"
