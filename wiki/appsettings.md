@@ -19,7 +19,7 @@
     "ApiKey": "123456" //ApiKey，可以在此处申请：https://www.trongrid.io/dashboard/keys
   },
   "TronConfig": {
-    "Address": "Taaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", //钱包地址，建议另外新建钱包地址，与下方私钥对应
+    "Address": "Taaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", //钱包地址，建议另外新建钱包地址
     "PrivateKey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", //私钥，建议另外新建钱包地址
     "USDTContractAddress": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", //此为USDT合约地址，请勿修改！！！
     "ApiHost": "https://apilist.tronscan.org"
@@ -40,6 +40,9 @@
   "MinToken": {
     "USDT": 5 //最小兑换USDT数量
   },
-  "FeeRate": 0.1 //从最终用户获取的TRX中的抽成比例，默认10%
+  "TrxRate": 0, //1 USDT兑换的TRX汇率，不设置或设为0使用实时汇率
+  "FeeRate": 0.1, //从最终用户获取的TRX中的抽成比例，默认10%
+  "SendTo": -10000, //目标群组的TG ID
+  "BlackList": "" //黑名单地址，不处理此地址的兑换请求
 }
 ```
