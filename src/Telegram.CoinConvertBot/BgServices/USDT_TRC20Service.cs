@@ -53,18 +53,12 @@ namespace Telegram.CoinConvertBot.BgServices
                 _logger.LogWarning("未配置USDT收款地址！");
                 return;
             }
-            var ContractAddress = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
-            var BaseUrl = "https://api.trongrid.io";
-            if (!_env.IsProduction())
-            {
-                ContractAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
-                BaseUrl = "https://api.shasta.trongrid.io";
-            }
+            var ContractAddress = _configuration.GetValue("TronConfig:USDTContractAddress", "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t");
+            var BaseUrl = _configuration.GetValue("TronConfig:ApiHost", "https://api.trongrid.io");
             foreach (var address in addressArray)
             {
-
                 var query = new Dictionary<string, object>();
-                query.Add("only_confirmed", true);
+                //query.Add("only_confirmed", true);
                 query.Add("only_to", true);
                 query.Add("limit", 50);
                 query.Add("min_timestamp", (long)payMinTime.ToUnixTimeStamp());
@@ -104,7 +98,7 @@ namespace Telegram.CoinConvertBot.BgServices
                         if (!await _repository.Where(x => x.BlockTransactionId == record.BlockTransactionId).AnyAsync())
                         {
                             await _repository.InsertAsync(record);
-                            _logger.LogInformation("新USDT入账：{@data}", record);
+                            _logger.LogInformation("新{ConvertCurrency}入账：{@data}", record.ConvertCurrency, record);
                             var AdminUserId = _configuration.GetValue<long>("BotConfig:AdminUserId");
                             try
                             {
@@ -118,7 +112,7 @@ namespace Telegram.CoinConvertBot.BgServices
                                     {
                                             new []
                                             {
-                                                Bot.Types.ReplyMarkups.InlineKeyboardButton.WithUrl("查看区块",viewUrl),
+                                                Bot.Types.ReplyMarkups.InlineKeyboardButton.WithUrl("查看交易",viewUrl),
                                             },
                                     });
 
@@ -129,7 +123,7 @@ namespace Telegram.CoinConvertBot.BgServices
                                     {
                                         try
                                         {
-                                            await _botClient.SendTextMessageAsync(bind.UserId, $@"<b>我们已经收到您转出的USDT</b>
+                                            await _botClient.SendTextMessageAsync(bind.UserId, $@"<b>我们已经收到您转出的{record.ConvertCurrency}</b>
 金额：<b>{record.OriginalAmount:#.######} {record.OriginalCurrency}</b>
 哈希：<code>{record.BlockTransactionId}</code>
 时间：<b>{record.ReceiveTime:yyyy-MM-dd HH:mm:ss}</b>
@@ -148,7 +142,7 @@ namespace Telegram.CoinConvertBot.BgServices
                                 {
                                     var _rateRepository = provider.GetRequiredService<IBaseRepository<TokenRate>>();
                                     var rate = await _rateRepository.Where(x => x.Currency == Currency.USDT && x.ConvertCurrency == Currency.TRX).FirstAsync(x => x.Rate);
-                                    await _botClient.SendTextMessageAsync(AdminUserId, $@"<b>USDT入账通知！({record.OriginalAmount:#.######} {record.OriginalCurrency})</b>
+                                    await _botClient.SendTextMessageAsync(AdminUserId, $@"<b>{record.ConvertCurrency}入账通知！({record.OriginalAmount:#.######} {record.OriginalCurrency})</b>
 
 订单：<code>{record.BlockTransactionId}</code>
 原币：<b>{record.OriginalCurrency}</b>
@@ -156,7 +150,7 @@ namespace Telegram.CoinConvertBot.BgServices
 来源：<code>{record.FromAddress}</code>
 接收：<code>{record.ToAddress}</code>
 转换：<b>{record.ConvertCurrency}</b>
-预估：<b>{record.OriginalAmount.USDT_To_TRX(rate)} TRX</b>
+预估：<b>{record.OriginalAmount.USDT_To_TRX(rate, BotHandler.UpdateHandlers.FeeRate)} {record.ConvertCurrency}</b>
 时间：<b>{record.ReceiveTime:yyyy-MM-dd HH:mm:ss}</b>
 ", Bot.Types.Enums.ParseMode.Html, replyMarkup: inlineKeyboard);
                                 }

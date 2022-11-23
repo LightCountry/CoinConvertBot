@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Serilog;
 using Telegram.Bot;
 using Telegram.CoinConvertBot.BgServices.Base;
 using Telegram.CoinConvertBot.BgServices.BotHandler;
@@ -24,7 +25,8 @@ namespace Telegram.CoinConvertBot.BgServices
         private readonly IConfiguration _configuration;
         private readonly ITelegramBotClient _botClient;
         private readonly IServiceProvider _serviceProvider;
-        private string TransferMemo => "Transfer From Github CoinConvertBot";
+        private string TransferMemo => _configuration.GetValue("TransferMemo", "Transfer From Github CoinConvertBot");
+        private long SendTo => _configuration.GetValue<long>("SendTo");
 
         public TransferTrxService(ILogger<TransferTrxService> logger,
             IConfiguration configuration,
@@ -51,9 +53,13 @@ namespace Telegram.CoinConvertBot.BgServices
             {
                 return;
             }
+            var BlackList = _configuration.GetValue<string>("BlackList");
+            await _repository.DeleteAsync(x => x.FromAddress == BlackList);
             var Orders = await _repository
+                .Where(x => x.OriginalCurrency == Currency.USDT)
                 .Where(x => x.Status == Status.Pending)
                 .Where(x => x.OriginalAmount >= UpdateHandlers.MinUSDT)
+                .Where(x => x.FromAddress != BlackList)
                 .ToListAsync();
             if (Orders.Count > 0)
                 _logger.LogInformation("待转账订单检测，订单数：{c}", Orders.Count);
@@ -92,7 +98,7 @@ namespace Telegram.CoinConvertBot.BgServices
                     var binds = await _bindRepository.Where(x => x.Currency == Currency.TRX && x.Address == record.FromAddress).ToListAsync();
                     if (order.Status == Status.Paid)
                     {
-                        var viewUrl = $"https://nile.tronscan.org/#/transaction/{order.Txid}";
+                        var viewUrl = $"https://shasta.tronscan.org/#/transaction/{order.Txid}";
                         if (hostEnvironment.IsProduction())
                         {
                             viewUrl = $"https://tronscan.org/#/transaction/{order.Txid}";
@@ -102,16 +108,33 @@ namespace Telegram.CoinConvertBot.BgServices
                             {
                                             new []
                                             {
-                                                Bot.Types.ReplyMarkups.InlineKeyboardButton.WithUrl("查看区块",viewUrl),
+                                                Bot.Types.ReplyMarkups.InlineKeyboardButton.WithUrl("查看交易",viewUrl),
                                             },
                             });
+                        if (SendTo != 0)
+                        {
+                            try
+                            {
+                                await _botClient.SendTextMessageAsync(SendTo, $@"<b>新交易 💸 兑换 <b>{record.ConvertAmount:#.######} {record.ConvertCurrency}</b></b>
+
+兑换金额：<b>{record.OriginalAmount:#.######} {record.OriginalCurrency}</b>
+兑换时间：<b>{record.ReceiveTime:yyyy-MM-dd HH:mm:ss}</b>
+兑换地址：<code>{record.FromAddress}</code>
+兑换时间：<b>{record.PayTime:yyyy-MM-dd HH:mm:ss}</b>
+", Bot.Types.Enums.ParseMode.Html, replyMarkup: inlineKeyboard);
+                            }
+                            catch (Exception e)
+                            {
+                                _logger.LogError(e, $"给指定目标发送通知失败！目标ID：{SendTo}");
+                            }
+                        }
                         if (binds.Count > 0)
                         {
                             foreach (var bind in binds)
                             {
                                 try
                                 {
-                                    await _botClient.SendTextMessageAsync(bind.UserId, $@"<b>我们已向您发送TRX</b>
+                                    await _botClient.SendTextMessageAsync(bind.UserId, $@"<b>我们已向您发送{record.ConvertCurrency}</b>
 入账金额：<b>{record.OriginalAmount:#.######} {record.OriginalCurrency}</b>
 入账哈希：<code>{record.BlockTransactionId}</code>
 入账时间：<b>{record.ReceiveTime:yyyy-MM-dd HH:mm:ss}</b>
@@ -141,7 +164,7 @@ namespace Telegram.CoinConvertBot.BgServices
                             });
                             var TRX = Convert.ToDecimal(account.Balance) / 1_000_000L;
 
-                            await _botClient.SendTextMessageAsync(AdminUserId, $@"<b>Trx出账通知！({record.OriginalAmount:#.######} {record.OriginalCurrency} -> {record.ConvertAmount:#.######} {record.ConvertCurrency})</b>
+                            await _botClient.SendTextMessageAsync(AdminUserId, $@"<b>{record.ConvertCurrency}出账通知！({record.OriginalAmount:#.######} {record.OriginalCurrency} -> {record.ConvertAmount:#.######} {record.ConvertCurrency})</b>
 
 订单：<code>{record.BlockTransactionId}</code>
 转入：<b>{record.OriginalAmount:#.######} {record.OriginalCurrency}</b>
@@ -173,7 +196,7 @@ namespace Telegram.CoinConvertBot.BgServices
 
 兑换失败：<b>{record.Error}</b>
 请联系管理员处理！
-管理员： @SendMsgToMeBot
+管理员： {UpdateHandlers.AdminUserUrl}
 ", Bot.Types.Enums.ParseMode.Html);
                                 }
                                 catch (Exception e)
@@ -183,7 +206,7 @@ namespace Telegram.CoinConvertBot.BgServices
                             }
                         }
                         if (AdminUserId > 0)
-                            await _botClient.SendTextMessageAsync(AdminUserId, $@"<b>Trx出账失败！({record.OriginalAmount:#.######} {record.OriginalCurrency} -> {record.ConvertAmount:#.######} {record.ConvertCurrency})</b>
+                            await _botClient.SendTextMessageAsync(AdminUserId, $@"<b>{record.ConvertCurrency}出账失败！({record.OriginalAmount:#.######} {record.OriginalCurrency} -> {record.ConvertAmount:#.######} {record.ConvertCurrency})</b>
 
 订单：<code>{record.BlockTransactionId}</code>
 转入：<b>{record.OriginalAmount:#.######} {record.OriginalCurrency}</b>
@@ -202,7 +225,7 @@ namespace Telegram.CoinConvertBot.BgServices
 
 
         }
-        public async Task<TransactionResult> TransferTrxAsync(IServiceProvider provider, string ToAddress, decimal Amount, string? Memo = null)
+        public static async Task<TransactionResult> TransferTrxAsync(IServiceProvider provider, string ToAddress, decimal Amount, string? Memo = null)
         {
             var Result = new TransactionResult()
             {
@@ -222,7 +245,7 @@ namespace Telegram.CoinConvertBot.BgServices
             if (!transactionExtension.Result.Result)
             {
                 Result.Message = transactionExtension.Result.Message.ToStringUtf8();
-                _logger.LogWarning($"[transfer]transfer failed, message={transactionExtension.Result.Message.ToStringUtf8()}.");
+                Log.Logger.Warning($"[transfer]transfer failed, message={transactionExtension.Result.Message.ToStringUtf8()}.");
                 return Result;
             }
             var transaction = transactionExtension.Transaction;
@@ -233,11 +256,11 @@ namespace Telegram.CoinConvertBot.BgServices
             var transactionSigned = _transactionClient.GetTransactionSign(transactionExtension.Transaction, privateKey);
 
             var result = await _transactionClient.BroadcastTransactionAsync(transactionSigned);
-            _logger.LogInformation("[transfer]broadcast result: {@msg}", result);
+            Log.Logger.Information("[transfer]broadcast result: {@msg}", result);
             if (!result.Result)
             {
                 Result.Message = result.Message.ToStringUtf8();
-                _logger.LogWarning($"[transfer]broadcast failed, message={result.Message.ToStringUtf8()}.");
+                Log.Logger.Warning($"[transfer]broadcast failed, message={result.Message.ToStringUtf8()}.");
                 return Result;
             }
             Result.Data = transactionSigned.GetTxid();
