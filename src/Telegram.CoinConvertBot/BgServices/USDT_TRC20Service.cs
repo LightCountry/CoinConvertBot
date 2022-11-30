@@ -150,7 +150,7 @@ namespace Telegram.CoinConvertBot.BgServices
 来源：<code>{record.FromAddress}</code>
 接收：<code>{record.ToAddress}</code>
 转换：<b>{record.ConvertCurrency}</b>
-预估：<b>{record.OriginalAmount.USDT_To_TRX(rate, BotHandler.UpdateHandlers.FeeRate)} {record.ConvertCurrency}</b>
+预估：<b>{record.OriginalAmount.USDT_To_TRX(rate, BotHandler.UpdateHandlers.FeeRate, BotHandler.UpdateHandlers.USDTFeeRate)} {record.ConvertCurrency}</b>
 时间：<b>{record.ReceiveTime:yyyy-MM-dd HH:mm:ss}</b>
 ", Bot.Types.Enums.ParseMode.Html, replyMarkup: inlineKeyboard);
                                 }

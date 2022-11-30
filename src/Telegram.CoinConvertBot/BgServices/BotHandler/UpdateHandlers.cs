@@ -27,6 +27,7 @@ public static class UpdateHandlers
     public static string AdminUserUrl => configuration.GetValue<string>("BotConfig:AdminUserUrl");
     public static decimal MinUSDT => configuration.GetValue("MinToken:USDT", 5m);
     public static decimal FeeRate => configuration.GetValue("FeeRate", 0.1m);
+    public static decimal USDTFeeRate => configuration.GetValue("USDTFeeRate", 0.01m);
     /// <summary>
     /// 错误处理
     /// </summary>
@@ -236,14 +237,30 @@ USDT： <b>{USDT}</b>
 示例：
 <code>转入金额：<b>10 USDT</b>
 手续费：<b>1 USDT</b>
-实时汇率：<b>1 USDT = {2m.USDT_To_TRX(rate, FeeRate):#.####} TRX</b>
-获得TRX：<b>(10 - 1) * {2m.USDT_To_TRX(rate, FeeRate):#.####} = {9m.USDT_To_TRX(rate, FeeRate):0.00} TRX</b></code>
+实时汇率：<b>1 USDT = {1m.USDT_To_TRX(rate, FeeRate, 0):#.####} TRX</b>
+获得TRX：<b>(10 - 1) * {1m.USDT_To_TRX(rate, FeeRate, 0):#.####} = {10m.USDT_To_TRX(rate, FeeRate, USDTFeeRate):0.00} TRX</b></code>
 
 注意：<b>只支持{MinUSDT} USDT以上的金额兑换。</b>
 
 转帐前，推荐您使用以下命令来接收入账通知
 <code>绑定波场地址 Txxxxxxx</code>(您的钱包地址)
 ";
+            if(USDTFeeRate == 0)
+            {
+                msg = @$"<b>请向此地址转入任意金额，机器人自动回款TRX</b>
+机器人收款地址： <code>{ReciveAddress}</code>
+
+示例：
+<code>转入金额：<b>10 USDT</b>
+实时汇率：<b>1 USDT = {1m.USDT_To_TRX(rate, FeeRate, 0):#.####} TRX</b>
+获得TRX：<b>10 * {1m.USDT_To_TRX(rate, FeeRate, 0):#.####} = {10m.USDT_To_TRX(rate, FeeRate, USDTFeeRate):0.00} TRX</b></code>
+
+注意：<b>只支持{MinUSDT} USDT以上的金额兑换。</b>
+
+转帐前，推荐您使用以下命令来接收入账通知
+<code>绑定波场地址 Txxxxxxx</code>(您的钱包地址)
+";
+            }
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                                                         text: msg,
                                                         parseMode: ParseMode.Html,
@@ -261,15 +278,15 @@ USDT： <b>{USDT}</b>
             var ReciveAddress = addressArray.Length == 0 ? "未配置" : addressArray[UserId % addressArray.Length];
             var msg = @$"<b>实时价目表</b>
 
-实时汇率：<b>1 USDT = {2m.USDT_To_TRX(rate, FeeRate):#.####} TRX</b>
+实时汇率：<b>1 USDT = {1m.USDT_To_TRX(rate, FeeRate, 0):#.####} TRX</b>
 ————————————————————<code>
-   5 USDT = {(5m * 1).USDT_To_TRX(rate, FeeRate):0.00} TRX
-  10 USDT = {(5m * 2).USDT_To_TRX(rate, FeeRate):0.00} TRX
-  20 USDT = {(5m * 4).USDT_To_TRX(rate, FeeRate):0.00} TRX
-  50 USDT = {(5m * 10).USDT_To_TRX(rate, FeeRate):0.00} TRX
- 100 USDT = {(5m * 20).USDT_To_TRX(rate, FeeRate):0.00} TRX
- 500 USDT = {(5m * 100).USDT_To_TRX(rate, FeeRate):0.00} TRX
-1000 USDT = {(5m * 200).USDT_To_TRX(rate, FeeRate):0.00} TRX
+   5 USDT = {(5m * 1).USDT_To_TRX(rate, FeeRate, USDTFeeRate):0.00} TRX
+  10 USDT = {(5m * 2).USDT_To_TRX(rate, FeeRate, USDTFeeRate):0.00} TRX
+  20 USDT = {(5m * 4).USDT_To_TRX(rate, FeeRate, USDTFeeRate):0.00} TRX
+  50 USDT = {(5m * 10).USDT_To_TRX(rate, FeeRate, USDTFeeRate):0.00} TRX
+ 100 USDT = {(5m * 20).USDT_To_TRX(rate, FeeRate, USDTFeeRate):0.00} TRX
+ 500 USDT = {(5m * 100).USDT_To_TRX(rate, FeeRate, USDTFeeRate):0.00} TRX
+1000 USDT = {(5m * 200).USDT_To_TRX(rate, FeeRate, USDTFeeRate):0.00} TRX
 </code>
 
 机器人收款地址： <code>{ReciveAddress}</code>
@@ -354,13 +371,13 @@ USDT： <b>{USDT}</b>
                 }
                 else
                 {
-                    var toPrice = price.USDT_To_TRX(rate, FeeRate);
+                    var toPrice = price.USDT_To_TRX(rate, FeeRate, USDTFeeRate);
                     msg = $"<b>{price} {fromCurrency} = {toPrice} {toCurrency}</b>";
                 }
             }
             if (fromCurrency == Currency.TRX && toCurrency == Currency.USDT)
             {
-                var toPrice = price.TRX_To_USDT(rate, FeeRate);
+                var toPrice = price.TRX_To_USDT(rate, FeeRate, USDTFeeRate);
                 if (toPrice < MinUSDT)
                 {
                     msg = $"仅支持大于{MinUSDT} USDT 的兑换";

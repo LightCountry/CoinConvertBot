@@ -53,20 +53,19 @@ namespace Telegram.CoinConvertBot.BgServices
             {
                 return;
             }
-            var BlackList = _configuration.GetValue<string>("BlackList");
-            await _repository.DeleteAsync(x => x.FromAddress == BlackList);
+            var BlackList = _configuration.GetSection("BlackList").Get<string[]>() ?? new string[0];
             var Orders = await _repository
                 .Where(x => x.OriginalCurrency == Currency.USDT)
                 .Where(x => x.Status == Status.Pending)
                 .Where(x => x.OriginalAmount >= UpdateHandlers.MinUSDT)
-                .Where(x => x.FromAddress != BlackList)
+                .Where(x => !BlackList.Contains(x.FromAddress))
                 .ToListAsync();
             if (Orders.Count > 0)
                 _logger.LogInformation("待转账订单检测，订单数：{c}", Orders.Count);
             foreach (var order in Orders)
             {
                 _logger.LogInformation("开始处理待转账订单: {c}", order.BlockTransactionId);
-                order.ConvertAmount = order.OriginalAmount.USDT_To_TRX(rate, UpdateHandlers.FeeRate);
+                order.ConvertAmount = order.OriginalAmount.USDT_To_TRX(rate, UpdateHandlers.FeeRate, UpdateHandlers.USDTFeeRate);
                 try
                 {
                     var result = await TransferTrxAsync(scope.ServiceProvider, order.FromAddress, order.ConvertAmount, TransferMemo);
@@ -119,7 +118,7 @@ namespace Telegram.CoinConvertBot.BgServices
 
 兑换金额：<b>{record.OriginalAmount:#.######} {record.OriginalCurrency}</b>
 兑换时间：<b>{record.ReceiveTime:yyyy-MM-dd HH:mm:ss}</b>
-兑换地址：<code>{record.FromAddress}</code>
+兑换地址：<code>{record.FromAddress.Substring(0, 5)}****{record.FromAddress.Substring(record.FromAddress.Length - 5, 5)}</code>
 兑换时间：<b>{record.PayTime:yyyy-MM-dd HH:mm:ss}</b>
 ", Bot.Types.Enums.ParseMode.Html, replyMarkup: inlineKeyboard);
                             }
