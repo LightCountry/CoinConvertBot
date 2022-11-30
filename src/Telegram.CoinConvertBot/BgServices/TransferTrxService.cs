@@ -58,7 +58,7 @@ namespace Telegram.CoinConvertBot.BgServices
                 .Where(x => x.OriginalCurrency == Currency.USDT)
                 .Where(x => x.Status == Status.Pending)
                 .Where(x => x.OriginalAmount >= UpdateHandlers.MinUSDT)
-                .Where(x => !BlackList.Contains(x.FromAddress))
+                .WhereIf(BlackList.Length > 0, x => !BlackList.Contains(x.FromAddress))
                 .ToListAsync();
             if (Orders.Count > 0)
                 _logger.LogInformation("待转账订单检测，订单数：{c}", Orders.Count);
