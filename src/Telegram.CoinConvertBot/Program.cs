@@ -9,7 +9,9 @@ using System.Data.Common;
 using System.Net;
 using System.Reflection;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.CoinConvertBot.BgServices;
+using Telegram.CoinConvertBot.BgServices.BotHandler;
 using Telegram.CoinConvertBot.Domains;
 using Telegram.CoinConvertBot.Models;
 using TronNet;
@@ -94,7 +96,19 @@ static void ConfigureServices(HostBuilderContext Context, IServiceCollection Ser
     }
     Log.Logger.Information("开始{UseProxy}连接Telegram服务器...", (useProxy ? "使用代理" : "不使用代理"));
     var me = botClient.GetMeAsync().GetAwaiter().GetResult();
-    Log.Logger.Information("Telegram机器人上线！机器人ID：{Id}，机器人名字：{FirstName}.", me.Id, me.FirstName);
+    UpdateHandlers.BotUserName = me.Username;
+    var SetDefaultMenu = Configuration.GetValue<bool>("SetDefaultMenu");
+    if (SetDefaultMenu)
+    {
+        botClient.SetMyCommandsAsync(new BotCommand[]
+        {
+        //new BotCommand(){Command="start",Description="欢迎兑换本机器人"},
+        new BotCommand(){Command="trx",Description="USDT-TRC20兑换TRX"},
+        new BotCommand(){Command="trx_price",Description="实时价目表"},
+        new BotCommand(){Command="valuation",Description="估价"},
+        }).GetAwaiter().GetResult();
+    }
+    Log.Logger.Information("Telegram机器人上线！机器人ID：{Id}({username})，机器人名字：{FirstName}.", me.Id, $"@{me.Username}", me.FirstName);
     var AdminUserId = Configuration.GetValue<long>("BotConfig:AdminUserId");
     if (AdminUserId > 0)
     {

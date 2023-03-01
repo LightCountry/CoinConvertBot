@@ -18,6 +18,16 @@
 快来领取你的可刷USDT的国际银行卡吧   
 ➡️➡️➡️ [点击领取你的国际信用卡](https://depay.depay.one/web-app/register-h5?invitCode=949656&lang=zh-cn)
 
+## AD -- 机器人推广
+查币机 - 链上信息查询：[查币机](https://t.me/QueryCoinBot)
+> 支持TRON、ETH、Polygon、BSC多链资产查询，也支持多种法币与区块链货币的实时汇率查询。
+
+USDT、TRX交易监控机器人：[USDT、TRX交易监控](https://t.me/CoinListenBot)
+> 监控波场地址余额变化，速度比钱包App的推送更快！！！
+
+兑币机 - TRX自动兑换：[兑币机](https://t.me/CoinConvertBot)
+> 自用兑币机，此开源项目脱胎于此机器人早期版本
+
 ## 项目简介
 - `CoinConvertBot`是一个由`C#语言`编写的私有化部署`USDT-TRC20`全自动兑换`TRX`的机器人。     
 - 本项目不依赖任何外部资源，无需另外部署`数据库`，采用轻量化的`sqlite`，也无需`redis`。
@@ -64,7 +74,7 @@ CoinConvertBot
 ## 打赏
 如果该项目对您有所帮助，希望可以请我喝一杯咖啡☕️
 ```
-USDT-TRC20打赏地址: TQWM6cuy6YesssqqzSucoUkS1A11kAAAAA
+USDT-TRC20打赏地址: TKGTx4pCKiKQbk8evXHTborfZn754TGViP
 ```
 <img src="wiki/imgs/usdt_thanks.jpg" width = "400" alt="usdt扫码打赏"/>
 

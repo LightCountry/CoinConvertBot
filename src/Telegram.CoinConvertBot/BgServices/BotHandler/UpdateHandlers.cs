@@ -20,6 +20,7 @@ namespace Telegram.CoinConvertBot.BgServices.BotHandler;
 
 public static class UpdateHandlers
 {
+    public static string? BotUserName = null!;
     public static IConfiguration configuration = null!;
     public static IFreeSql freeSql = null!;
     public static IServiceScopeFactory serviceScopeFactory = null!;
@@ -93,6 +94,7 @@ public static class UpdateHandlers
         {
             Log.Logger.Error(e, "更新Telegram用户信息失败！");
         }
+        messageText = messageText.Replace($"@{BotUserName}", "");
         var action = messageText.Split(' ')[0] switch
         {
             "/start" => Start(botClient, message),
@@ -245,7 +247,7 @@ USDT： <b>{USDT}</b>
 转帐前，推荐您使用以下命令来接收入账通知
 <code>绑定波场地址 Txxxxxxx</code>(您的钱包地址)
 ";
-            if(USDTFeeRate == 0)
+            if (USDTFeeRate == 0)
             {
                 msg = @$"<b>请向此地址转入任意金额，机器人自动回款TRX</b>
 机器人收款地址： <code>{ReciveAddress}</code>
@@ -308,10 +310,8 @@ USDT： <b>{USDT}</b>
 当前支持兑换以下币种：
 <code>USDT-TRC20 --> TRX</code>
 
-即将支持兑换的币种：
-<code>       TRX --> USDT-TRC20</code>
-<code>       ETH --> USDT-ERC20</code>
-<code>USDT-ERC20 --> ETH </code>
+本机器人为<a href='https://github.com/LightCountry'>LightCountry</a>旗下开源机器人！
+项目地址：<a href='https://github.com/LightCountry/CoinConvertBot'>Telegram.CoinConvertBot</a>
 
 如有需要，请联系管理员： {AdminUserUrl}
 ";
@@ -319,6 +319,7 @@ USDT： <b>{USDT}</b>
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                                                         text: usage,
                                                         parseMode: ParseMode.Html,
+                                                        disableWebPagePreview: true,
                                                         replyMarkup: new ReplyKeyboardRemove());
         }
         //估价
@@ -351,10 +352,7 @@ USDT： <b>{USDT}</b>
             {
                 return await ValuationAction(botClient, message, trxPrice, Currency.TRX, Currency.USDT);
             }
-            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                        text: "未知输入！",
-                                                        parseMode: ParseMode.Html,
-                                                        replyMarkup: new ReplyKeyboardRemove());
+            return message;
         }
         static async Task<Message> ValuationAction(ITelegramBotClient botClient, Message message, decimal price, Currency fromCurrency, Currency toCurrency)
         {

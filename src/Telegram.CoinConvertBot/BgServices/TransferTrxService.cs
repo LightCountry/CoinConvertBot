@@ -25,7 +25,8 @@ namespace Telegram.CoinConvertBot.BgServices
         private readonly IConfiguration _configuration;
         private readonly ITelegramBotClient _botClient;
         private readonly IServiceProvider _serviceProvider;
-        private string TransferMemo => _configuration.GetValue("TransferMemo", "Transfer From Github CoinConvertBot");
+        //备注开始收手续费了，去掉
+        //private string TransferMemo => _configuration.GetValue("TransferMemo", "Transfer From Github CoinConvertBot");
         private long SendTo => _configuration.GetValue<long>("SendTo");
 
         public TransferTrxService(ILogger<TransferTrxService> logger,
@@ -68,7 +69,7 @@ namespace Telegram.CoinConvertBot.BgServices
                 order.ConvertAmount = order.OriginalAmount.USDT_To_TRX(rate, UpdateHandlers.FeeRate, UpdateHandlers.USDTFeeRate);
                 try
                 {
-                    var result = await TransferTrxAsync(scope.ServiceProvider, order.FromAddress, order.ConvertAmount, TransferMemo);
+                    var result = await TransferTrxAsync(scope.ServiceProvider, order.FromAddress, order.ConvertAmount);
                     if (result.Success)
                     {
                         order.Status = Status.Paid;
