@@ -1,4 +1,5 @@
 
+using Flurl.Http;
 using FreeSql;
 using FreeSql.DataAnnotations;
 using Microsoft.Extensions.Configuration;
@@ -15,14 +16,27 @@ using Telegram.CoinConvertBot.BgServices.BotHandler;
 using Telegram.CoinConvertBot.Domains;
 using Telegram.CoinConvertBot.Models;
 using TronNet;
+using static TronNet.Protocol.Transaction.Types;
+
+const string Version = "v1.0.6";
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .WriteTo.Console()
     .CreateBootstrapLogger();
-
+Serilog.Log.Information("当前版本：{result}", Version);
+if (!System.IO.File.Exists("BlackList.json") || (DateTime.Now - System.IO.File.GetLastWriteTime("BlackList.json")).TotalDays > 1)
+{
+    var result = await "https://raw.githubusercontent.com/LightCountry/CoinConvertBot/master/json/BlackList.json"
+        .DownloadFileAsync("./");
+    Serilog.Log.Information("下载公共黑名单地址：{result}", result);
+}
+else
+{
+    Serilog.Log.Information("无需更新公共黑名单地址");
+}
 var host = Host.CreateDefaultBuilder(args);
-
+host.ConfigureAppConfiguration(config => config.AddJsonFile("BlackList.json", optional: false, reloadOnChange: true));
 host.UseSerilog((context, services, configuration) => configuration
                     .ReadFrom.Configuration(context.Configuration)
                     .ReadFrom.Services(services)
@@ -97,7 +111,7 @@ static void ConfigureServices(HostBuilderContext Context, IServiceCollection Ser
     Log.Logger.Information("开始{UseProxy}连接Telegram服务器...", (useProxy ? "使用代理" : "不使用代理"));
     var me = botClient.GetMeAsync().GetAwaiter().GetResult();
     UpdateHandlers.BotUserName = me.Username;
-    var SetDefaultMenu = Configuration.GetValue<bool>("SetDefaultMenu");
+    var SetDefaultMenu = Configuration.GetValue<bool>("SetDefaultMenu", true);
     if (SetDefaultMenu)
     {
         botClient.SetMyCommandsAsync(new BotCommand[]

@@ -54,8 +54,14 @@ namespace Telegram.CoinConvertBot.BgServices
             {
                 return;
             }
+            #region 黑名单地址处理
             var BlackList = _configuration.GetSection("BlackList").Get<string[]>() ?? new string[0];
+            var PublicBlackList = _configuration.GetSection("PublicBlackList").Get<List<PublicBlackList>>() ?? new List<PublicBlackList>();
+            BlackList = BlackList.Concat(PublicBlackList.Select(x => x.Address)).Distinct().ToArray();
+            #endregion
+            var start = DateTime.Now.AddDays(-1);//仅查询一天内的交易
             var Orders = await _repository
+                .Where(x => x.CreateTime >= start)
                 .Where(x => x.OriginalCurrency == Currency.USDT)
                 .Where(x => x.Status == Status.Pending)
                 .Where(x => x.OriginalAmount >= UpdateHandlers.MinUSDT)
@@ -154,15 +160,6 @@ namespace Telegram.CoinConvertBot.BgServices
                         }
                         if (AdminUserId > 0)
                         {
-                            var _myTronConfig = provider.GetRequiredService<IOptionsSnapshot<MyTronConfig>>();
-                            var _wallet = provider.GetRequiredService<IWalletClient>();
-                            var protocol = _wallet.GetProtocol();
-                            var addr = _wallet.ParseAddress(_myTronConfig.Value.Address);
-                            var account = await protocol.GetAccountAsync(new TronNet.Protocol.Account
-                            {
-                                Address = addr
-                            });
-                            var TRX = Convert.ToDecimal(account.Balance) / 1_000_000L;
 
                             await _botClient.SendTextMessageAsync(AdminUserId, $@"<b>{record.ConvertCurrency}出账通知！({record.OriginalAmount:#.######} {record.OriginalCurrency} -> {record.ConvertAmount:#.######} {record.ConvertCurrency})</b>
 
@@ -171,10 +168,32 @@ namespace Telegram.CoinConvertBot.BgServices
 转出：<b>{record.ConvertAmount:#.######} {record.ConvertCurrency}</b>
 时间：<b>{record.PayTime:yyyy-MM-dd HH:mm:ss}</b>
 地址：<code>{record.FromAddress}</code>
------------------------------
-余额：<b>{TRX} TRX</b>
-已用带宽：<b>{account.FreeNetUsage + account.NetUsage}</b>
 ", Bot.Types.Enums.ParseMode.Html, replyMarkup: inlineKeyboard);
+#pragma warning disable CS4014
+                            Task.Run(async () =>
+                            {
+                                await Task.Delay(5000);//确保数据准确，延迟5秒再查询
+                                var _myTronConfig = provider.GetRequiredService<IOptionsSnapshot<MyTronConfig>>();
+                                var _wallet = provider.GetRequiredService<IWalletClient>();
+                                var _contractClientFactory = provider.GetRequiredService<IContractClientFactory>();
+                                var protocol = _wallet.GetProtocol();
+                                var addr = _wallet.ParseAddress(_myTronConfig.Value.Address);
+                                var account = await protocol.GetAccountAsync(new TronNet.Protocol.Account
+                                {
+                                    Address = addr
+                                });
+                                var TRX = Convert.ToDecimal(account.Balance) / 1_000_000L;
+                                var contractAddress = _myTronConfig.Value.USDTContractAddress;
+                                var contractClient = _contractClientFactory.CreateClient(ContractProtocol.TRC20);
+                                var USDT = await contractClient.BalanceOfAsync(contractAddress, _wallet.GetAccount(_myTronConfig.Value.PrivateKey));
+
+                                await _botClient.SendTextMessageAsync(AdminUserId, $@"<b>当前余额</b>
+
+TRX余额：<b>{TRX} TRX</b>
+USDT余额：<b>{USDT} USDT</b>
+", Bot.Types.Enums.ParseMode.Html, replyMarkup: inlineKeyboard);
+                            });
+#pragma warning restore CS4014
                         }
                     }
                     else

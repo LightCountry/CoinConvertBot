@@ -306,6 +306,7 @@ USDT： <b>{USDT}</b>
         //通用回复
         static async Task<Message> Start(ITelegramBotClient botClient, Message message)
         {
+            var HideGithub = configuration.GetValue("HideGithub", false);
             string usage = @$"欢迎使用货币兑换服务！
 当前支持兑换以下币种：
 <code>USDT-TRC20 --> TRX</code>
@@ -315,7 +316,15 @@ USDT： <b>{USDT}</b>
 
 如有需要，请联系管理员： {AdminUserUrl}
 ";
+            if (HideGithub)
+            {
+                usage = @$"欢迎使用货币兑换服务！
+当前支持兑换以下币种：
+<code>USDT-TRC20 --> TRX</code>
 
+如有需要，请联系管理员： {AdminUserUrl}
+";
+            }
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                                                         text: usage,
                                                         parseMode: ParseMode.Html,
