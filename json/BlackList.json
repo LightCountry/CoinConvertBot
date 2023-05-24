@@ -1,5 +1,5 @@
 {
-    "BlackList":[
+    "PublicBlackList":[
         {
             "Name":"Okex",
             "Address":"TM1zzNDZD2DPASbKcgdVoTYhfmYgtfwx9R"
