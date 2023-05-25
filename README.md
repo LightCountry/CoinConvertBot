@@ -31,7 +31,7 @@ USDT、TRX交易监控机器人：[USDT、TRX交易监控](https://t.me/CoinList
 波场能量机器人：[波场能量机器人](https://t.me/Buy_Energy_Bot)
 > 波场能量租用，有能量时转账USDT不扣TRX，为你节省50-70%的TRX
 
-TG会员秒开-全自动发货机器人：[TG会员秒开-全自动发货](https://t.me/BuyYourPremiumBot)
+TG会员秒开机器人：[TG会员秒开-全自动发货](https://t.me/BuyYourPremiumBot)
 > 24小时自动开通Telegram Premium会员，只需一个用户名即可开通。
 
 ## 项目简介
