@@ -26,7 +26,13 @@ USDT、TRX交易监控机器人：[USDT、TRX交易监控](https://t.me/CoinList
 > 监控波场地址余额变化，速度比钱包App的推送更快！！！
 
 兑币机 - TRX自动兑换：[兑币机](https://t.me/CoinConvertBot)
-> 自用兑币机，此开源项目脱胎于此机器人早期版本
+> 自用兑币机，并不是开源版机器人！！！
+
+波场能量机器人：[波场能量机器人](https://t.me/Buy_Energy_Bot)
+> 波场能量租用，有能量时转账USDT不扣TRX，为你节省50-70%的TRX
+
+TG会员秒开-全自动发货机器人：[TG会员秒开-全自动发货](https://t.me/BuyYourPremiumBot)
+> 24小时自动开通Telegram Premium会员，只需一个用户名即可开通。
 
 ## 项目简介
 - `CoinConvertBot`是一个由`C#语言`编写的私有化部署`USDT-TRC20`全自动兑换`TRX`的机器人。     
