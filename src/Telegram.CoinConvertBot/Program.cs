@@ -18,7 +18,7 @@ using Telegram.CoinConvertBot.Models;
 using TronNet;
 using static TronNet.Protocol.Transaction.Types;
 
-const string Version = "v1.0.6";
+const string Version = "v1.0.6.1";
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()

@@ -12,7 +12,7 @@ namespace Telegram.CoinConvertBot.BgServices
 {
     public class UpdateRateService : BaseScheduledService
     {
-        const string baseUrl = "https://www.okx.com";
+        const string baseUrl = "https://www.binance.com";
         const string User_Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36";
         private readonly IConfiguration _configuration;
         private readonly IServiceProvider _serviceProvider;
@@ -58,25 +58,22 @@ namespace Telegram.CoinConvertBot.BgServices
             }
             else
             {
-                var side = "buy";
                 try
                 {
-
                     var convert1 = await baseUrl
                         .WithClient(client)
                         .WithHeaders(new { User_Agent })
-                        .AppendPathSegment("v2/asset/quick/exchange/quote")
+                        .AppendPathSegment("bapi/margin/v2/public/new-otc/get-quote")
                         //.SetQueryParams()
                         .PostJsonAsync(new
                         {
-                            side,
-                            baseCcy = Currency.TRX.ToString(),
-                            quoteCcy = Currency.USDT.ToString(),
-                            rfqSz = 1,
-                            rfqSzCcy = Currency.USDT.ToString(),
+                            fromCoin = Currency.USDT.ToString(),
+                            toCoin = Currency.TRX.ToString(),
+                            requestAmount = 100,
+                            requestCoin = Currency.USDT.ToString(),
                         })
                         .ReceiveJson<Root>();
-                    if (convert1.code == 0)
+                    if (convert1.success)
                     {
                         list.Add(new TokenRate
                         {
@@ -84,55 +81,52 @@ namespace Telegram.CoinConvertBot.BgServices
                             Currency = Currency.USDT,
                             ConvertCurrency = Currency.TRX,
                             LastUpdateTime = DateTime.Now,
-                            Rate = convert1.data.askBaseSz,
-                            ReverseRate = convert1.data.askPx,
+                            Rate = convert1.data.quotePrice,
+                            ReverseRate = convert1.data.inversePrice,
                         });
                     }
                     else
                     {
-                        //_logger.LogWarning("TRX -> USDT 汇率获取失败！错误信息：{msg}", convert1.msg ?? convert1.error_message);
+                        _logger.LogWarning("TRX -> USDT 汇率获取失败！错误信息：{msg}\n详细错误信息：{msg2}", convert1.message ?? "无", convert1.messageDetail ?? "无");
                     }
                 }
                 catch (Exception e)
                 {
                     _logger.LogWarning("TRX -> USDT 汇率获取失败！错误信息：{msg}", e?.InnerException?.Message + "; " + e?.Message);
                 }
-            }
 
-            foreach (var item in list)
-            {
-                _logger.LogInformation("更新汇率，{a} -> {b} = {c}", item.Currency, item.ConvertCurrency, item.Rate);
-                await _repository.InsertOrUpdateAsync(item);
+                foreach (var item in list)
+                {
+                    _logger.LogInformation("更新汇率，{a} -> {b} = {c}", item.Currency, item.ConvertCurrency, item.Rate);
+                    await _repository.InsertOrUpdateAsync(item);
+                }
+                _logger.LogInformation("------------------{tips}------------------", "结束更新汇率");
             }
-            _logger.LogInformation("------------------{tips}------------------", "结束更新汇率");
         }
+#pragma warning disable CS8618
+        public class Root
+        {
+            public string code { get; set; }
+            public string message { get; set; }
+            public string messageDetail { get; set; }
+            public Data data { get; set; }
+            public bool success { get; set; }
+        }
+        public class Data
+        {
+            public decimal quotePrice { get; set; }
+            public decimal inversePrice { get; set; }
+            public int expireTime { get; set; }
+            public long expireTimestamp { get; set; }
+            public string fromCoin { get; set; }
+            public string toCoin { get; set; }
+            public decimal toCoinAmount { get; set; }
+            public decimal fromCoinAmount { get; set; }
+            public string requestCoin { get; set; }
+            public decimal requestAmount { get; set; }
+            public bool fromIsBase { get; set; }
+            public bool split { get; set; }
+        }
+#pragma warning restore CS8618
     }
-
-    class Datum
-    {
-        public Currency baseCcy { get; set; }
-        public Currency quoteCcy { get; set; }
-        public decimal askPx { get; set; }
-        public decimal askQuoteSz { get; set; }
-        public decimal askBaseSz { get; set; }
-    }
-
-    class Root
-    {
-        public int code { get; set; }
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-        public Datum data { get; set; }
-        public string detailMsg { get; set; }
-        public string error_code { get; set; }
-        public string error_message { get; set; }
-        public string msg { get; set; }
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-    }
-
-    enum OkxSide
-    {
-        Buy,
-        Sell
-    }
-
 }
