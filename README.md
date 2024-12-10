@@ -12,7 +12,7 @@
 
 >一款开源自动化USDT兑换TRX的Telegram机器人！
 
-## AD -- 机器人推广
+## AD -- Telegram机器人推广
 查币机 - 链上信息查询：[查币机](https://t.me/QueryCoinBot)
 > 支持TRON、ETH、Polygon、BSC多链资产查询，也支持多种法币与区块链货币的实时汇率查询。
 
@@ -30,6 +30,9 @@ TG会员秒开机器人：[TG会员秒开-全自动发货](https://t.me/BuyYourP
 
 +888匿名号码租用机器人：[+888匿名号码租用机器人](https://t.me/Zu888Bot)
 > Telegram +888 匿名号码租用机器人。
+
+客服爸爸机器人：[客服爸爸](https://t.me/KeFuFatherBot)
+> 免费创建您自己的客服机器人（双向机器人）。
 
 ## 项目简介
 - `CoinConvertBot`是一个由`C#语言`编写的私有化部署`USDT-TRC20`全自动兑换`TRX`的机器人。     
